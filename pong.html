@@ -1,0 +1,199 @@
+<canvas width="600" height="400"></canvas>
+
+<script>
+
+    //Criando o quadro e o pincel
+    let tela = document.querySelector("canvas");
+    let pincel = tela.getContext("2d");
+
+    //Variáveis para medir a tela
+    let larguraMaxima = 600;
+    let alturaMaxima = 400;
+
+    //Variáveis para usar as teclas do teclado
+    let teclaCima = 38;
+    let teclaBaixo = 40;
+
+    //Variáveis da bolinha
+    let xBolinha = 300;
+    let yBolinha = 200;
+    let diametro = 20;
+    let raio = diametro/2;
+
+    //Variáveis da velocidade da bolinha
+    let velocidadeXBolinha = 2;
+    let velocidadeYBolinha = 2;
+
+    //Variáveis da raquete
+    let xRaquete = 5;
+    let yRaquete = 150;
+    let comprimentoRaquete = 9;
+    let alturaRaquete = 90;
+
+    //Variáveis do oponente
+    let xRaqueteOponente = 585;
+    let yRaqueteOponente = 150;
+    let velocidadeYOponente;
+    let chanceDeErrar = 0;
+
+    //Variáveis dos pontos
+    let meusPontos = 0;
+    let pontosDoOponente = 0;
+
+
+    //Função para limpar a tela
+    function limpaTela() {
+        pincel.clearRect(0, 0, larguraMaxima, alturaMaxima);
+    }
+
+    //Função para pintar o fundo da tela
+    function desenhaFundo() {
+        pincel.fillStyle = "black";
+    pincel.fillRect(0, 0, larguraMaxima, alturaMaxima);
+    }
+
+    //Função para fazer a bolinha aparecer na tela
+    function mostraBolinha() {
+
+        pincel.fillStyle = "white";
+        pincel.beginPath();
+        pincel.arc(xBolinha, yBolinha, raio, 0, diametro);
+        pincel.fill();
+    }
+
+    //função para fazer a bolinha se movimentar pela tela
+    function movimentaBolinha() {
+        mostraBolinha();
+        xBolinha += velocidadeXBolinha;
+        yBolinha += velocidadeYBolinha;
+
+    }
+
+    //Função para verificar se a bolinha está colidindo com a borda
+    function verificaColisaoBorda() {
+        if (xBolinha + raio > larguraMaxima || xBolinha - raio < 0) {
+            velocidadeXBolinha *= -1;
+
+        }
+        if (yBolinha + raio > alturaMaxima || yBolinha - raio < 0) {
+            velocidadeYBolinha *= -1;
+
+        }
+    }
+
+    //Função para criar a raquete
+    function mostraRaquete(x, y) {
+
+        pincel.fillStyle = "blue";
+        pincel.fillRect(x, y, comprimentoRaquete, alturaRaquete);
+    }
+
+    //Função para movementar minha raquete
+    function movimentaRaquete(event) {
+        if (event.keyCode == teclaCima && yRaquete > 0) {
+            yRaquete -= 18;
+        }
+        if (event.keyCode == teclaBaixo && yRaquete < 310) {
+            yRaquete += 18;
+        }   
+    }
+
+    //Função para verificar a colisão com a raquete do jogador
+    function verificaColisaoRaquete(x, y) {
+
+            if (xBolinha - raio < x + comprimentoRaquete && 
+            yBolinha - raio < y + alturaRaquete && yBolinha + raio > y)
+            velocidadeXBolinha *= -1;
+
+    }
+
+    //Função para criar a raquete do oponente
+    function mostraRaqueteOponente(x, y) {
+
+        pincel.fillStyle = "orange";
+        pincel.fillRect(x, y, comprimentoRaquete, alturaRaquete);
+    }
+
+    //Função para movimentar a raquete do oponente
+    function movimentaRaqueteOponente() {
+        velocidadeYOponente = yBolinha - yRaqueteOponente - comprimentoRaquete/2 - 30;
+        yRaqueteOponente += velocidadeYOponente + chanceDeErrar;
+        calculaChanceDeErrar();
+    }
+
+    //Função para verificar se a bolinha colide com a raquete do oponente
+    function verificaColisaoRaqueteOponente(x,y) {
+       if(xBolinha + raio > x &&  
+       yBolinha - raio < y + alturaRaquete  && yBolinha + raio > y){
+       velocidadeXBolinha *= -1;
+
+       }
+    }  
+
+
+    //Função que inclui um placar
+    function incluiPlacar() {
+        pincel.font = "30px serif";
+        pincel.textAlign = "center";
+        pincel.fillStyle = "blue";
+        pincel.fillText(meusPontos, 150, 40);
+        pincel.fillStyle = "orange";
+        pincel.fillText(pontosDoOponente, 450, 40);
+    }
+
+    //Função que contabiliza os pontos
+    function mostraPlacar() {
+        if (xBolinha + raio > larguraMaxima) {
+            meusPontos++;
+        } if (xBolinha - raio < 0) {
+            pontosDoOponente++;
+
+        }
+    }
+
+    //Função para a bolinha não ficar presa atras da raquete
+    function bolinhaNaoFicaPresa() {
+        if (xBolinha - raio < 0) {
+            xbolinha = 300;
+        }
+    }
+
+    //Função para calcular a chance de errar do adversário
+    function calculaChanceDeErrar() {
+        if (pontosDoOponente >= meusPontos) {
+            chanceDeErrar += 1
+        if (chanceDeErrar >= 39){
+            chanceDeErrar = 100;
+        }
+      } else {
+            chanceDeErrar -= 1
+        if (chanceDeErrar <= 35){
+            chanceDeErrar = 40
+        }
+      }
+    }
+
+    function atualizaTela() {
+        limpaTela();
+        desenhaFundo();
+        incluiPlacar();
+        mostraPlacar();
+        mostraBolinha();
+        movimentaBolinha();
+        verificaColisaoBorda();
+        mostraRaquete(xRaquete, yRaquete);
+        verificaColisaoRaquete(xRaquete, yRaquete);
+        mostraRaqueteOponente(xRaqueteOponente, yRaqueteOponente);
+        movimentaRaqueteOponente();
+        verificaColisaoRaqueteOponente(xRaqueteOponente, yRaqueteOponente);
+        bolinhaNaoFicaPresa();
+    }
+
+    setInterval(atualizaTela, 1);
+
+    //Recebe o movimento do jogador ao pressionar a tecla
+    document.onkeydown = movimentaRaquete;
+
+
+
+</script>
